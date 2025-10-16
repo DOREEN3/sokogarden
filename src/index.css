@@ -11,3 +11,25 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+/* style product image  */
+.productimage{
+  height: 200px;
+  width: 100%;
+  object-fit: contain;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+ 
+}
+.card{
+  width:100%;
+  text-align: center;
+  transition: all 0.3s ease-in-out;
+ 
+}
+  
+.card:hover {
+  transform: scale(1.03);
+  border: 1px solid #0d6efd; 
+  box-shadow: 0 10px 25px rgba(13, 110, 253, 0.3);
+}
