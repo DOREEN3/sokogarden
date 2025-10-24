@@ -82,6 +82,12 @@ const Getproduct = () => {
     setSortByField("product_cost");
   };
 
+  // reset pagination on search 
+  const handleSearch = (e)=>{
+    setSearchTerm(e.target.value)
+    setCurrentPage(1)
+  }
+
   const imagepath = 'https://doreen98.pythonanywhere.com/static/images/';
 
   return (
@@ -97,7 +103,7 @@ const Getproduct = () => {
             type="text"
             placeholder="Search by name"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch}
             style={{ height: "35px", width: "100%", padding: "10px" }}
           />
         </div>
@@ -105,7 +111,10 @@ const Getproduct = () => {
           <select
             className="form-select"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value)
+              setCurrentPage(1)
+            }}
           >
             {categories.map((category, index) => (
               <option key={index} value={category}>
@@ -119,7 +128,10 @@ const Getproduct = () => {
           <select
             className="form-select"
             value={sortDirection}
-            onChange={(e) => setSortDirection(e.target.value)}
+            onChange={(e) => {
+              setSortDirection(e.target.value)
+              setCurrentPage(1)
+            }}
           >
             <option value="">Price</option>
             <option value="desc">Highest Price</option>
@@ -135,6 +147,7 @@ const Getproduct = () => {
               if (value === "az" || value === "za") {
                 setSortByField("product_name");
                 setSortDirection(value === "az" ? "asc" : "desc");
+                setCurrentPage(1)
               } else {
                 setSortByField("product_cost");
                 setSortDirection("");
