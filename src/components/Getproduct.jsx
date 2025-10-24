@@ -5,18 +5,20 @@ import { useNavigate } from 'react-router-dom';
 const Getproduct = () => {
   const navigate = useNavigate();
 
+  // Posting states
   const [loading, setLoading] = useState("");
   const [error, setError] = useState("");
   const [products, setProducts] = useState([]);
 
   // Sorting/filtering states
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortDirection,setSortDirection]=useState("")
+  const [sortDirection, setSortDirection] = useState("");
   const [sortByField, setSortByField] = useState("product_cost");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
 
-
-  const imagepath = 'https://doreen98.pythonanywhere.com/static/images/';
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
 
   // Fetch products
   const getproducts = async () => {
@@ -34,23 +36,22 @@ const Getproduct = () => {
   useEffect(() => {
     getproducts();
   }, []);
-  
-  // extract the categories
+
+  // Extract categories
   const categories = ["All Categories", ...new Set(products.map(p => p.product_category))];
 
-
-  // Apply filtering and sorting
+  // Filter + Sort logic
   const filteredProducts = products
-    .filter((product) =>
+    .filter(product =>
       product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (selectedCategory === "All Categories" || product.product_category === selectedCategory)
+      (selectedCategory === "All Categories" || product.product_category === selectedCategory)
     )
     .sort((a, b) => {
-     
-    
       const aValue = a[sortByField];
       const bValue = b[sortByField];
-    
+
+      if (sortDirection === "") return 0; // no sorting
+
       if (typeof aValue === 'string') {
         return sortDirection === 'asc'
           ? aValue.localeCompare(bValue)
@@ -61,15 +62,27 @@ const Getproduct = () => {
           : bValue - aValue;
       }
     });
-    
 
-  // Reset all filters
+  // Pagination calculations
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Reset filters
   const handleReset = () => {
     setSearchTerm("");
-    setSortDirection("")
-    setSelectedCategory("All Categories")
+    setSortDirection("");
+    setSelectedCategory("All Categories");
     setSortByField("product_cost");
   };
+
+  const imagepath = 'https://doreen98.pythonanywhere.com/static/images/';
 
   return (
     <div className='container-fluid'>
@@ -89,11 +102,11 @@ const Getproduct = () => {
           />
         </div>
         <div className="col-md-2">
-              <select
+          <select
             className="form-select"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-             >
+          >
             {categories.map((category, index) => (
               <option key={index} value={category}>
                 {category}
@@ -104,17 +117,17 @@ const Getproduct = () => {
 
         <div className="col-md-2">
           <select
-          className="form-select"
-          value={sortDirection}
-          onChange={(e) => setSortDirection(e.target.value)}
-            >
-          <option value="">Price</option>
-          <option value="desc">Highest Price</option>
-          <option value="asc">Lowest Price</option>
-        </select>
-      </div>
+            className="form-select"
+            value={sortDirection}
+            onChange={(e) => setSortDirection(e.target.value)}
+          >
+            <option value="">Price</option>
+            <option value="desc">Highest Price</option>
+            <option value="asc">Lowest Price</option>
+          </select>
+        </div>
 
-      <div className="col-md-2">
+        <div className="col-md-2">
           <select
             className="form-select"
             onChange={(e) => {
@@ -124,7 +137,7 @@ const Getproduct = () => {
                 setSortDirection(value === "az" ? "asc" : "desc");
               } else {
                 setSortByField("product_cost");
-                setSortDirection(""); // Default to no sorting
+                setSortDirection("");
               }
             }}
           >
@@ -135,16 +148,18 @@ const Getproduct = () => {
         </div>
 
         <div className="col-md-2">
-          <button className="btn btn-dark w-100" onClick={handleReset}>Reset</button>
+          <button className="btn btn-dark w-100" onClick={handleReset}>
+            Reset
+          </button>
         </div>
       </div>
 
       {/* Product list */}
       <div className='row p-4'>
-        {filteredProducts.length === 0 ? (
+        {currentItems.length === 0 ? (
           <div className="text-center text-muted">No products found.</div>
         ) : (
-          filteredProducts.map((product, index) => (
+          currentItems.map((product, index) => (
             <div key={product.id || index} className='col-md-3 d-flex align-items-stretch justify-content-center mb-4'>
               <div className="card shadow card-margin h-100">
                 <img
@@ -175,6 +190,27 @@ const Getproduct = () => {
             </div>
           ))
         )}
+      </div>
+
+      {/* Pagination */}
+      <div className="d-flex justify-content-center mt-4">
+        <nav>
+          <ul className="pagination">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <li
+                key={index}
+                className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+              >
+                <button
+                  className="page-link"
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </div>
   );
